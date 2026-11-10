@@ -9,7 +9,7 @@ plugins {
 group = "ru.rt"
 version = "0.1.0"
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
 
 repositories { mavenCentral() }
 
