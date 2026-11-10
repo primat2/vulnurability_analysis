@@ -3,15 +3,15 @@ services:
     image: postgres:15
     container_name: vuln-postgres
     environment:
-      POSTGRES_DB: vuln
-      POSTGRES_USER: vuln
-      POSTGRES_PASSWORD: vuln
+      POSTGRES_DB: vuln_database
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U vuln -d vuln"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vuln_database"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -21,9 +21,9 @@ services:
       context: ./backend
     container_name: vuln-backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vuln
-      SPRING_DATASOURCE_USERNAME: vuln
-      SPRING_DATASOURCE_PASSWORD: vuln
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vuln_database
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
     ports:
       - "8080:8080"
     depends_on:
