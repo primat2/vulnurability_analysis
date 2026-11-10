@@ -1,4 +1,7 @@
 
+**/node_modules
+
+
 HELP.md
 .gradle
 build/
@@ -19,7 +22,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+**/.idea
 *.iws
 *.iml
 *.ipr
