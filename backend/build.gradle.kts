@@ -26,6 +26,9 @@ dependencies {
 
     runtimeOnly("org.postgresql:postgresql")
 
+    // Для импортёра:
+    implementation("org.apache.commons:commons-csv:1.14.1")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:postgresql:1.20.3")
     testImplementation("org.testcontainers:junit-jupiter:1.20.3")
