@@ -38,6 +38,7 @@ class CsvImporter(
 
     @Transactional
     override fun run(vararg args: String) {
+        // TODO: костыль, путь захардкожен
         val path = Path.of("D:\\data.csv")
         log.info("Импорт из {}", path.toAbsolutePath())
 
