@@ -36,12 +36,18 @@ class TicketController(
         @RequestParam(defaultValue = "desc") dir: String
     ): Page<TicketResponse> {
         val direction = if (dir.equals("asc", true)) Sort.Direction.ASC else Sort.Direction.DESC
-        val order = when (sort) {
-            "deadline" -> Sort.Order(direction, "deadline").nullsLast()
-            "actual"   -> Sort.Order(direction, "actual").nullsLast()
-            else       -> Sort.Order(direction, "createdAt")
+        val sortOrder = when (sort) {
+            "deadline" -> Sort.by(
+                Sort.Order(direction, "deadline").nullsLast(),   // NULL в конце в любом направлении
+                Sort.Order(Sort.Direction.DESC, "createdAt")
+            )
+            "actual" -> Sort.by(
+                Sort.Order(direction, "actual").nullsLast(),
+                Sort.Order(Sort.Direction.DESC, "createdAt")
+            )
+            else -> Sort.by(Sort.Order(Sort.Direction.DESC, "createdAt"))
         }
-        val pageable = PageRequest.of(page, size, Sort.by(order))
+        val pageable = PageRequest.of(page, size, sortOrder)
         return service.list(actual, ecosystem, artifact, cve, pageable).map { it.toResponse() }
     }
 
