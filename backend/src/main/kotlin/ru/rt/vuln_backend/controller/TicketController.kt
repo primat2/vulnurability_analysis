@@ -23,6 +23,7 @@ class TicketController(
         @RequestParam(required = false) ecosystem: EEcosystem?,
         @RequestParam(required = false) artifact: String?,
         @RequestParam(required = false) cve: String?,
+        @RequestParam(required = false) solved: Boolean?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
         @RequestParam(defaultValue = "createdAt") sort: String,
@@ -41,7 +42,7 @@ class TicketController(
             else -> Sort.by(Sort.Order(Sort.Direction.DESC, "createdAt"))
         }
         val pageable = PageRequest.of(page, size, sortOrder)
-        return service.list(actual, ecosystem, artifact, cve, pageable)
+        return service.list(actual, ecosystem, artifact, cve, solved, pageable)
     }
 
     @GetMapping("/{id}")

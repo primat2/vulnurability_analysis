@@ -20,6 +20,7 @@ CREATE TABLE ticket (
     artifact_id  BIGINT       NOT NULL REFERENCES artifact(id),
     deadline     DATE,
     actual       BOOLEAN,                -- null = не триажено
+    solved       BOOLEAN       NOT NULL DEFAULT false,
     comment      TEXT,
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),

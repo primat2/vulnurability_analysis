@@ -27,11 +27,13 @@ class TicketService(
 
     @Transactional(readOnly = true)
     fun list(
-        actual: Boolean?, ecosystem: EEcosystem?, artifactName: String?, cve: String?, pageable: Pageable
+        actual: Boolean?, ecosystem: EEcosystem?, artifactName: String?, cve: String?,
+        solved: Boolean?, pageable: Pageable
     ): Page<TicketResponse> {
         var spec: Specification<Ticket> = Specification.where(null)
 
         if (actual != null) spec = spec.and { root, _, cb -> cb.equal(root.get<Boolean?>("actual"), actual) }
+        if (solved != null) spec = spec.and { root, _, cb -> cb.equal(root.get<Boolean>("solved"), solved) }
         if (ecosystem != null) spec = spec.and { root, _, cb ->
             cb.equal(root.get<Artifact>("artifact").get<EEcosystem>("ecosystem"), ecosystem)
         }
@@ -98,7 +100,7 @@ class TicketService(
     private fun toResponse(t: Ticket) = TicketResponse(
         id = t.id!!, jiraUrl = t.jiraUrl,
         artifact = ArtifactRef(t.artifact.id!!, t.artifact.name, t.artifact.ecosystem),
-        deadline = t.deadline, actual = t.actual, comment = t.comment,
+        deadline = t.deadline, actual = t.actual, solved = t.solved, comment = t.comment,
         vulnerabilities = t.vulnerabilities.map { VulnerabilityRef(it.id!!, it.cveId, it.description) }
             .sortedBy { it.cveId },
         createdAt = t.createdAt, updatedAt = t.updatedAt

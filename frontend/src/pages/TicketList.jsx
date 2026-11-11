@@ -2,9 +2,22 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { Link } from 'react-router-dom'
 
+function isOverdue(ticket) {
+  if (ticket.solved || !ticket.deadline) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return new Date(ticket.deadline) < today
+}
+
+function rowClass(ticket) {
+  if (ticket.solved) return 'solved-row'
+  if (isOverdue(ticket)) return 'overdue-row'
+  return ''
+}
+
 export default function TicketList() {
   const [data, setData] = useState({ content: [], totalPages: 0, number: 0 })
-  const [filters, setFilters] = useState({ actual: '', ecosystem: '', artifact: '', cve: '' })
+  const [filters, setFilters] = useState({ actual: '', ecosystem: '', artifact: '', cve: '', activeOnly: false })
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState({ field: 'createdAt', dir: 'desc' })
   const [loading, setLoading] = useState(false)
@@ -15,6 +28,7 @@ export default function TicketList() {
     api.listTickets({
       ...filters,
       actual: filters.actual === '' ? undefined : filters.actual,
+      solved: filters.activeOnly ? false : undefined,
       page,
       size: 20,
       sort: sort.field,
@@ -80,6 +94,14 @@ export default function TicketList() {
           value={filters.cve}
           onChange={(e) => { setFilters({ ...filters, cve: e.target.value }); setPage(0) }}
         />
+        <label className="checkbox-filter">
+          <input
+            type="checkbox"
+            checked={filters.activeOnly}
+            onChange={(e) => { setFilters({ ...filters, activeOnly: e.target.checked }); setPage(0) }}
+          />
+          Только актуальные
+        </label>
       </div>
 
       {error && <div className="error">{error}</div>}
@@ -103,7 +125,7 @@ export default function TicketList() {
         </thead>
         <tbody>
           {data.content.map((t) => (
-            <tr key={t.id}>
+            <tr key={t.id} className={rowClass(t)}>
               <td><a href={t.jiraUrl} target="_blank" rel="noreferrer">{t.jiraUrl.split('/').pop()}</a></td>
               <td>{t.artifact.name} <span className="eco">{t.artifact.ecosystem}</span></td>
               <td className="cve-cell">

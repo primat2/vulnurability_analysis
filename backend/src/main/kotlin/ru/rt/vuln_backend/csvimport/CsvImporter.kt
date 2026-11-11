@@ -81,7 +81,8 @@ class CsvImporter(
                             artifact = artifact,
                             deadline = deadline,
                             actual = actual,
-                            comment = comment
+                            comment = comment,
+                            solved = deadline == null
                         )
                         ticket.vulnerabilities = resolveVulnerabilities(cveIds) { cveCreated++ }
                         tickets.save(ticket)

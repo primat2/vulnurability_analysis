@@ -24,6 +24,7 @@ data class TicketResponse(
     val artifact: ArtifactRef,
     val deadline: LocalDate?,
     val actual: Boolean?,
+    val solved: Boolean,
     val comment: String?,
     val vulnerabilities: List<VulnerabilityRef>,
     val createdAt: Instant,

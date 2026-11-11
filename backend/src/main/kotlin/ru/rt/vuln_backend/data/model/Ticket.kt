@@ -21,6 +21,8 @@ class Ticket(
 
     var actual: Boolean? = null,
 
+    var solved: Boolean = false,
+
     @Column(columnDefinition = "text")
     var comment: String? = null,
 
