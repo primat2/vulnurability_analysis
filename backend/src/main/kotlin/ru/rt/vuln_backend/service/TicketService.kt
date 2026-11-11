@@ -6,7 +6,10 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import ru.rt.vuln_backend.data.dto.ArtifactRef
 import ru.rt.vuln_backend.data.dto.TicketRequest
+import ru.rt.vuln_backend.data.dto.TicketResponse
+import ru.rt.vuln_backend.data.dto.VulnerabilityRef
 import ru.rt.vuln_backend.data.model.Artifact
 import ru.rt.vuln_backend.data.model.EEcosystem
 import ru.rt.vuln_backend.data.model.Ticket
@@ -25,7 +28,7 @@ class TicketService(
     @Transactional(readOnly = true)
     fun list(
         actual: Boolean?, ecosystem: EEcosystem?, artifactName: String?, cve: String?, pageable: Pageable
-    ): Page<Ticket> {
+    ): Page<TicketResponse> {
         var spec: Specification<Ticket> = Specification.where(null)
 
         if (actual != null) spec = spec.and { root, _, cb -> cb.equal(root.get<Boolean?>("actual"), actual) }
@@ -43,16 +46,16 @@ class TicketService(
                 .where(cb.like(cb.lower(tv.get("cveId")), "%${cve.lowercase()}%"))
             cb.exists(sub as Subquery<*>?)
         }
-        return tickets.findAll(spec, pageable)
+        return tickets.findAll(spec, pageable).map { toResponse(it) }
     }
 
     @Transactional(readOnly = true)
-    fun get(id: Long): Ticket = tickets.findById(id).orElseThrow {
-        NoSuchElementException("Ticket $id not found")
-    }
+    fun get(id: Long): TicketResponse = toResponse(
+        tickets.findById(id).orElseThrow { NoSuchElementException("Ticket $id not found") }
+    )
 
     @Transactional
-    fun create(req: TicketRequest): Ticket {
+    fun create(req: TicketRequest): TicketResponse {
         val artifact = artifacts.findById(req.artifactId).orElseThrow {
             NoSuchElementException("Artifact ${req.artifactId} not found")
         }
@@ -64,12 +67,12 @@ class TicketService(
             comment = req.comment?.trim()?.ifBlank { null }
         )
         ticket.vulnerabilities = resolveVulnerabilities(req.cveIds)
-        return tickets.save(ticket)
+        return toResponse(tickets.save(ticket))
     }
 
     @Transactional
-    fun update(id: Long, req: TicketRequest): Ticket {
-        val ticket = get(id)
+    fun update(id: Long, req: TicketRequest): TicketResponse {
+        val ticket = tickets.findById(id).orElseThrow { NoSuchElementException("Ticket $id not found") }
         val artifact = artifacts.findById(req.artifactId).orElseThrow {
             NoSuchElementException("Artifact ${req.artifactId} not found")
         }
@@ -79,16 +82,27 @@ class TicketService(
         ticket.actual = req.actual
         ticket.comment = req.comment?.trim()?.ifBlank { null }
         ticket.vulnerabilities = resolveVulnerabilities(req.cveIds)
-        return ticket
+        return toResponse(ticket)
     }
 
     @Transactional
-    fun patchActual(id: Long, actual: Boolean?): Ticket {
-        val t = get(id); t.actual = actual; return t
+    fun patchActual(id: Long, actual: Boolean?): TicketResponse {
+        val t = tickets.findById(id).orElseThrow { NoSuchElementException("Ticket $id not found") }
+        t.actual = actual
+        return toResponse(t)
     }
 
     @Transactional
     fun delete(id: Long) = tickets.deleteById(id)
+
+    private fun toResponse(t: Ticket) = TicketResponse(
+        id = t.id!!, jiraUrl = t.jiraUrl,
+        artifact = ArtifactRef(t.artifact.id!!, t.artifact.name, t.artifact.ecosystem),
+        deadline = t.deadline, actual = t.actual, comment = t.comment,
+        vulnerabilities = t.vulnerabilities.map { VulnerabilityRef(it.id!!, it.cveId, it.description) }
+            .sortedBy { it.cveId },
+        createdAt = t.createdAt, updatedAt = t.updatedAt
+    )
 
     private fun resolveVulnerabilities(raw: List<String>): MutableSet<Vulnerability> {
         val cveIds = raw.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
