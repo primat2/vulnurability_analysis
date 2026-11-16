@@ -9,7 +9,7 @@
 | Backend | Kotlin 2.0, Spring Boot 3.3, Spring Data JPA, Flyway, PostgreSQL 15, OpenAPI (springdoc) |
 | Frontend | React 18 (JavaScript, без TypeScript), Vite, React Router, `fetch` (без axios/TS/TanStack) |
 | Инфра | Docker Compose (Postgres + backend + frontend), Testcontainers (интеграционные тесты) |
-| Сборка | Gradle Kotlin DSL (backend), npm (frontend) |
+| Сборка | Gradle Kotlin DSL (backend), npm (frontend) | 
 
 Принцип фронтенда: **как можно проще**. Команда — бэкендеры, сложный фронт поддерживать некому. Никакого TS, минимум зависимостей, только `useState`/`useEffect` и `fetch`.
 
